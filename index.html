@@ -708,12 +708,16 @@ async function dlData(){
   btn.textContent='⏳ Envoi en cours...';
   btn.disabled=true;
 
+  const jsonString=JSON.stringify(obj, null, 2);
+
   try{
-    // Envoi automatique vers Make / Google Drive
     const resp=await fetch(MAKE_WEBHOOK,{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(obj)
+      headers:{
+        'Content-Type':'text/plain',
+        'X-File-Name': S.nomFichier
+      },
+      body: jsonString
     });
 
     if(resp.ok){
@@ -725,9 +729,8 @@ async function dlData(){
       throw new Error('Réponse serveur: '+resp.status);
     }
   } catch(err){
-    // En cas d'erreur réseau — fallback téléchargement manuel
     console.warn('Webhook failed, fallback download:', err);
-    const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'});
+    const blob=new Blob([jsonString],{type:'application/json'});
     const a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
     a.download=S.nomFichier;
