@@ -363,7 +363,7 @@ canvas.sig{width:100%;height:180px;border:2px solid var(--grey-l);border-radius:
     <p style="font-size:13px;color:var(--grey);margin-bottom:14px">
       Appuyez sur le bouton — le rapport sera envoyé <strong>automatiquement</strong> dans Google Drive de Catriona.
     </p>
-    <button class="btn btn-p" id="btnDl" onclick="dlData()">📤 Envoyer le rapport à Catriona</button>
+    <button class="btn btn-p" id="btnDl" onclick="dlData()">🔗 Générer le lien à envoyer à Catriona</button>
     <div class="dl-status" id="dlStatus"></div>
   </div>
 
@@ -705,41 +705,68 @@ async function dlData(){
   const btn=document.getElementById('btnDl');
   const status=document.getElementById('dlStatus');
 
-  btn.textContent='⏳ Envoi en cours...';
+  btn.textContent='⏳ Génération du lien...';
   btn.disabled=true;
 
-  const jsonString=JSON.stringify(obj, null, 2);
+  const jsonString=JSON.stringify(obj);
 
   try{
-    const resp=await fetch(MAKE_WEBHOOK,{
+    // Envoyer vers JSONBlob pour générer un lien partageable
+    const resp=await fetch('https://jsonblob.com/api/jsonBlob',{
       method:'POST',
-      headers:{
-        'Content-Type':'text/plain',
-        'X-File-Name': S.nomFichier
-      },
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
       body: jsonString
     });
 
     if(resp.ok){
-      btn.textContent='✅ Rapport envoyé !';
-      btn.style.opacity='.7';
-      status.innerHTML='✅ Rapport envoyé automatiquement dans Google Drive !<br><span style="font-size:11px;color:var(--grey)">Catriona a été notifiée.</span>';
-      status.classList.add('show');
+      // JSONBlob retourne l'URL dans le header Location
+      const url=resp.headers.get('Location')||'';
+      if(url){
+        S.lienPartage=url;
+        btn.textContent='✅ Lien généré !';
+        btn.style.opacity='.7';
+
+        // Afficher le lien et le bouton copier
+        status.innerHTML=`
+          <div style="margin-top:12px;padding:14px;background:#F0FFF8;border:1px solid #4CAF7D;border-radius:8px">
+            <div style="font-size:12px;font-weight:700;color:#4CAF7D;margin-bottom:8px">✅ Lien prêt à envoyer à Catriona</div>
+            <div style="font-size:11px;color:#555;background:#fff;padding:8px;border-radius:6px;word-break:break-all;margin-bottom:10px">${url}</div>
+            <button onclick="copyLink('${url}')" style="width:100%;padding:12px;background:#45B5A9;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">
+              📋 Copier le lien pour WhatsApp
+            </button>
+          </div>
+        `;
+        status.classList.add('show');
+      } else {
+        throw new Error('Lien non reçu');
+      }
     } else {
-      throw new Error('Réponse serveur: '+resp.status);
+      throw new Error('Erreur serveur: '+resp.status);
     }
   } catch(err){
-    console.warn('Webhook failed, fallback download:', err);
+    // Fallback : téléchargement direct
+    console.warn('JSONBlob failed:', err);
     const blob=new Blob([jsonString],{type:'application/json'});
     const a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
     a.download=S.nomFichier;
     a.click();
-    btn.textContent='⚠️ Envoi échoué — fichier téléchargé';
+    btn.textContent='💾 Fichier téléchargé';
     btn.style.opacity='.7';
-    status.innerHTML='⚠️ Connexion impossible. Le fichier a été téléchargé sur votre téléphone.<br><span style="font-size:11px">Déposez-le manuellement dans Google Drive.</span>';
+    status.innerHTML='<div style="margin-top:10px;font-size:12px;color:#555">Le fichier a été téléchargé. Envoyez-le à Catriona par WhatsApp.</div>';
     status.classList.add('show');
   }
+}
+
+function copyLink(url){
+  const msgWhatsApp=`Bonjour Catriona ! Voici le lien de l'état des lieux :\n${url}`;
+  navigator.clipboard.writeText(msgWhatsApp).then(()=>{
+    const btns=document.querySelectorAll('#dlStatus button');
+    btns.forEach(b=>{b.textContent='✅ Lien copié — colle-le dans WhatsApp !';b.style.background='#4CAF7D'});
+  }).catch(()=>{
+    // Fallback si clipboard non disponible
+    prompt('Copie ce lien et envoie-le à Catriona :',msgWhatsApp);
+  });
 }
 
 function resetApp(){
