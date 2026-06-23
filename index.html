@@ -690,7 +690,10 @@ function buildExportObj(){
           nouvelleAdresse:S.nouvelleAdresse,dateInspection:S.dateInsp,
           inspecteur:S.inspecteur,ville:S.ville,generatedAt:new Date().toISOString()},
     pieces:S.pieces.map(p=>({id:p.id,nom:p.nom,
-      evaluations:p.elems.map(e=>({elem:e,etat:(p.evals[e]&&p.evals[e].etat)||null,obs:(p.evals[e]&&p.evals[e].obs)||''})),
+      evaluations:p.elems.map(e=>{
+        const ev=p.evals[e]||{etat:null,obs:''};
+        return {elem:e, etat:ev.etat||null, obs:ev.obs||''};
+      }),
       photos:p.photos})),
     divers:DIVERS_ELEMS.map(e=>({elem:e,etat:S.divers[e]?.etat||null,obs:S.divers[e]?.obs||''})),
     cles:CLES_TYPES.map(t=>({type:t,qt:S.cles[t]?.qt||'',date:S.cles[t]?.date||'',obs:S.cles[t]?.obs||''})),
@@ -700,74 +703,40 @@ function buildExportObj(){
   };
 }
 
-async function dlData(){
+function dlData(){
   const obj=buildExportObj();
   const btn=document.getElementById('btnDl');
   const status=document.getElementById('dlStatus');
 
-  btn.textContent='⏳ Génération du lien...';
+  // Télécharger le fichier
+  const jsonString=JSON.stringify(obj,null,2);
+  const blob=new Blob([jsonString],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=S.nomFichier;
+  a.click();
+
+  btn.textContent='✅ Fichier téléchargé !';
   btn.disabled=true;
+  btn.style.opacity='.7';
 
-  const jsonString=JSON.stringify(obj);
-
-  try{
-    // Envoyer vers JSONBlob pour générer un lien partageable
-    const resp=await fetch('https://jsonblob.com/api/jsonBlob',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Accept':'application/json'},
-      body: jsonString
-    });
-
-    if(resp.ok){
-      // JSONBlob retourne l'URL dans le header Location
-      const url=resp.headers.get('Location')||'';
-      if(url){
-        S.lienPartage=url;
-        btn.textContent='✅ Lien généré !';
-        btn.style.opacity='.7';
-
-        // Afficher le lien et le bouton copier
-        status.innerHTML=`
-          <div style="margin-top:12px;padding:14px;background:#F0FFF8;border:1px solid #4CAF7D;border-radius:8px">
-            <div style="font-size:12px;font-weight:700;color:#4CAF7D;margin-bottom:8px">✅ Lien prêt à envoyer à Catriona</div>
-            <div style="font-size:11px;color:#555;background:#fff;padding:8px;border-radius:6px;word-break:break-all;margin-bottom:10px">${url}</div>
-            <button onclick="copyLink('${url}')" style="width:100%;padding:12px;background:#45B5A9;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">
-              📋 Copier le lien pour WhatsApp
-            </button>
-          </div>
-        `;
-        status.classList.add('show');
-      } else {
-        throw new Error('Lien non reçu');
-      }
-    } else {
-      throw new Error('Erreur serveur: '+resp.status);
-    }
-  } catch(err){
-    // Fallback : téléchargement direct
-    console.warn('JSONBlob failed:', err);
-    const blob=new Blob([jsonString],{type:'application/json'});
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);
-    a.download=S.nomFichier;
-    a.click();
-    btn.textContent='💾 Fichier téléchargé';
-    btn.style.opacity='.7';
-    status.innerHTML='<div style="margin-top:10px;font-size:12px;color:#555">Le fichier a été téléchargé. Envoyez-le à Catriona par WhatsApp.</div>';
-    status.classList.add('show');
-  }
+  status.innerHTML=`
+    <div style="margin-top:12px;padding:14px;background:#F0FFF8;border:1px solid #4CAF7D;border-radius:8px;text-align:left">
+      <div style="font-size:13px;font-weight:700;color:#4CAF7D;margin-bottom:10px">✅ Fichier sauvegardé !</div>
+      <div style="font-size:13px;color:#1A1A1A;line-height:1.8">
+        <strong>Étape suivante :</strong><br>
+        1. Ouvrez <strong>WhatsApp</strong><br>
+        2. Ouvrez la conversation avec <strong>Catriona</strong><br>
+        3. Appuyez sur 📎 → <strong>Document</strong><br>
+        4. Sélectionnez <strong>${S.nomFichier}</strong> dans Téléchargements<br>
+        5. Envoyez ✅
+      </div>
+    </div>
+  `;
+  status.classList.add('show');
 }
 
-function copyLink(url){
-  const msgWhatsApp=`Bonjour Catriona ! Voici le lien de l'état des lieux :\n${url}`;
-  navigator.clipboard.writeText(msgWhatsApp).then(()=>{
-    const btns=document.querySelectorAll('#dlStatus button');
-    btns.forEach(b=>{b.textContent='✅ Lien copié — colle-le dans WhatsApp !';b.style.background='#4CAF7D'});
-  }).catch(()=>{
-    // Fallback si clipboard non disponible
-    prompt('Copie ce lien et envoie-le à Catriona :',msgWhatsApp);
-  });
-}
+function copyLink(url){}
 
 function resetApp(){
   if(!confirm('Démarrer un nouveau rapport ? Les données actuelles seront perdues.'))return;
