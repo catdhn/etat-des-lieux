@@ -420,6 +420,76 @@ function pick(key,val,el) {
   if(key==='edlType') document.getElementById('s1-nouv').classList.toggle('hidden',val!=='sortie');
 }
 
+// ══ SAUVEGARDE AUTOMATIQUE ══
+const BACKUP_KEY = 'turquoise_edl_backup';
+
+function autoSave(){
+  try{
+    const backup = {
+      timestamp: new Date().toISOString(),
+      state: JSON.parse(JSON.stringify({
+        ...S,
+        // Exclure les photos pour garder le backup léger si trop lourd
+        pieces: S.pieces.map(p=>({...p, photos: p.photos.slice(0,10)}))
+      }))
+    };
+    localStorage.setItem(BACKUP_KEY, JSON.stringify(backup));
+  }catch(e){ console.warn('Sauvegarde impossible:', e); }
+}
+
+function checkBackup(){
+  try{
+    const raw = localStorage.getItem(BACKUP_KEY);
+    if(!raw) return;
+    const backup = JSON.parse(raw);
+    const age = (new Date() - new Date(backup.timestamp)) / (1000*60*60);
+    if(age > 24){ localStorage.removeItem(BACKUP_KEY); return; }
+    // Afficher bannière de restauration
+    const dateF = new Date(backup.timestamp).toLocaleDateString('fr-CA',{day:'2-digit',month:'long',hour:'2-digit',minute:'2-digit'});
+    const banner = document.createElement('div');
+    banner.id = 'restore-banner';
+    banner.style.cssText = 'position:fixed;top:56px;left:0;right:0;background:#FFF8E8;border-bottom:2px solid #E8913A;padding:12px 18px;z-index:300;display:flex;align-items:center;justify-content:space-between;font-family:var(--font);font-size:13px';
+    banner.innerHTML = `
+      <span>⚠️ <strong>Rapport non terminé</strong> — ${backup.state.locataire||'?'} · ${backup.state.adresse||'?'} · ${dateF}</span>
+      <div style="display:flex;gap:8px">
+        <button onclick="restoreBackup()" style="background:#E8913A;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-weight:700;cursor:pointer;font-family:var(--font)">↩ Reprendre</button>
+        <button onclick="dismissBackup()" style="background:#fff;color:#555;border:1px solid #ccc;border-radius:6px;padding:7px 14px;cursor:pointer;font-family:var(--font)">Ignorer</button>
+      </div>
+    `;
+    document.body.appendChild(banner);
+  }catch(e){}
+}
+
+function restoreBackup(){
+  try{
+    const raw = localStorage.getItem(BACKUP_KEY);
+    if(!raw) return;
+    const backup = JSON.parse(raw);
+    Object.assign(S, backup.state);
+    document.getElementById('restore-banner')?.remove();
+    // Restaurer les champs de l'écran 1
+    document.getElementById('adresse').value = S.adresse||'';
+    document.getElementById('locataire').value = S.locataire||'';
+    document.getElementById('emailLocataire').value = S.emailLocataire||'';
+    document.getElementById('inspecteur').value = S.inspecteur||'';
+    document.getElementById('ville').value = S.ville||'Sherbrooke';
+    document.getElementById('dateInsp').value = S.dateInsp||'';
+    if(S.nouvelleAdresse) document.getElementById('nouvelleAdresse').value = S.nouvelleAdresse;
+    // Naviguer vers le bon écran
+    if(S.pieces && S.pieces.length > 0){
+      buildPNav();
+      loadPiece(S.curIdx||0);
+      showS('s2');
+    }
+    alert('✅ Rapport restauré ! Vous pouvez continuer où vous en étiez.');
+  }catch(e){ alert('Impossible de restaurer le rapport.'); }
+}
+
+function dismissBackup(){
+  localStorage.removeItem(BACKUP_KEY);
+  document.getElementById('restore-banner')?.remove();
+}
+
 function goS2() {
   const a=document.getElementById('adresse').value.trim();
   const l=document.getElementById('locataire').value.trim();
@@ -493,8 +563,8 @@ function buildEtatTable(p,pidx) {
   });
 }
 
-function setEtat(pidx,elem,val){if(!S.pieces[pidx].evals[elem])S.pieces[pidx].evals[elem]={etat:null,obs:''};S.pieces[pidx].evals[elem].etat=val}
-function setObs(pidx,elem,val){if(!S.pieces[pidx].evals[elem])S.pieces[pidx].evals[elem]={etat:null,obs:''};S.pieces[pidx].evals[elem].obs=val}
+function setEtat(pidx,elem,val){if(!S.pieces[pidx].evals[elem])S.pieces[pidx].evals[elem]={etat:null,obs:''};S.pieces[pidx].evals[elem].etat=val;autoSave()}
+function setObs(pidx,elem,val){if(!S.pieces[pidx].evals[elem])S.pieces[pidx].evals[elem]={etat:null,obs:''};S.pieces[pidx].evals[elem].obs=val;autoSave()}
 
 function renderPhotos(idx) {
   const g=document.getElementById('pgrid');
@@ -513,6 +583,7 @@ function addPhotos(ev) {
     r.onload=e=>{
       S.pieces[S.curIdx].photos.push(e.target.result);
       renderPhotos(S.curIdx);
+      autoSave();
     };
     r.readAsDataURL(f);
   });
@@ -697,6 +768,9 @@ function dlData(){
   const btn=document.getElementById('btnDl');
   const status=document.getElementById('dlStatus');
 
+  // Effacer le backup — rapport complété avec succès
+  try{ localStorage.removeItem(BACKUP_KEY); }catch(e){}
+
   // Télécharger le fichier
   const jsonString=JSON.stringify(obj,null,2);
   const blob=new Blob([jsonString],{type:'application/json'});
@@ -743,6 +817,7 @@ function resetApp(){
 }
 
 document.getElementById('dateInsp').valueAsDate=new Date();
+checkBackup();
 </script>
 </body>
 </html>
