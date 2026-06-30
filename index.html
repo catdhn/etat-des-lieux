@@ -508,22 +508,11 @@ function renderPhotos(idx) {
 }
 
 function addPhotos(ev) {
-  const existingPhotos = S.pieces[S.curIdx].photos;
-  let duplicates = 0;
   Array.from(ev.target.files).forEach(f=>{
     const r=new FileReader();
     r.onload=e=>{
-      const b64=e.target.result;
-      // Vérification doublon — comparer les 200 premiers caractères du base64
-      const signature=b64.substring(0,200);
-      const isDuplicate=existingPhotos.some(p=>p.substring(0,200)===signature);
-      if(isDuplicate){
-        duplicates++;
-        if(duplicates===1) alert('⚠️ Cette photo a déjà été ajoutée — doublon ignoré.');
-      } else {
-        existingPhotos.push(b64);
-        renderPhotos(S.curIdx);
-      }
+      S.pieces[S.curIdx].photos.push(e.target.result);
+      renderPhotos(S.curIdx);
     };
     r.readAsDataURL(f);
   });
