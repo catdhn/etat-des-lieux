@@ -221,11 +221,17 @@ canvas.sig{width:100%;height:180px;border:2px solid var(--grey-l);border-radius:
   <div class="card">
     <div class="card-t">Type de logement</div>
     <div class="sel2">
+      <div class="sel-opt" data-k="logType" data-v="2.5" onclick="pick('logType','2.5',this)">
+        <div class="ico">🏢</div><div class="nm">2½</div><div class="ds">4 pièces</div>
+      </div>
       <div class="sel-opt" data-k="logType" data-v="3.5" onclick="pick('logType','3.5',this)">
         <div class="ico">🏠</div><div class="nm">3½</div><div class="ds">5 pièces</div>
       </div>
       <div class="sel-opt" data-k="logType" data-v="4.5" onclick="pick('logType','4.5',this)">
         <div class="ico">🏡</div><div class="nm">4½</div><div class="ds">6 pièces</div>
+      </div>
+      <div class="sel-opt" data-k="logType" data-v="5.5" onclick="pick('logType','5.5',this)">
+        <div class="ico">🏘️</div><div class="nm">5½</div><div class="ds">7 pièces</div>
       </div>
     </div>
   </div>
@@ -421,6 +427,11 @@ const PIECES_45 = [
   { id:'ch1', nom:'Chambre 1', icon:'🛏️', elems:['Placards, rangements','Serrure, porte, menuiserie','Fenêtre','Murs','Plafond','Sol, plinthes','Prises, interrupteurs','Éclairage'] },
   { id:'ch2', nom:'Chambre 2', icon:'🛏️', elems:['Placards, rangements','Serrure, porte, menuiserie','Fenêtre','Murs','Plafond','Sol, plinthes','Prises, interrupteurs','Éclairage'] },
 ];
+
+// 2½ : pas de chambre fermée. 5½ : 3 chambres.
+const PIECES_25 = PIECES_35.filter(p=>p.id!=='chambre');
+const PIECES_55 = [...PIECES_45, { ...PIECES_45.find(p=>p.id==='ch2'), id:'ch3', nom:'Chambre 3' }];
+const PIECES_PAR_TYPE = { '2.5':PIECES_25, '3.5':PIECES_35, '4.5':PIECES_45, '5.5':PIECES_55 };
 
 const DIVERS_ELEMS = ['Sonnette / Interphone','Détecteur de fumée','Boîte aux lettres','Stationnement'];
 const CLES_TYPES = ['Entrée commune','Entrée appartement','Boîte aux lettres'];
@@ -643,7 +654,7 @@ function goS2() {
   S.emailLocataire=document.getElementById('emailLocataire').value.trim();
   // Les pièces ne sont (re)créées que si elles n'existent pas encore ou si le type de logement a changé
   if(!S.pieces.length||S.piecesFor!==S.logType){
-    const tmpl=S.logType==='3.5'?PIECES_35:PIECES_45;
+    const tmpl=PIECES_PAR_TYPE[S.logType];
     S.pieces=tmpl.map(p=>({...p,evals:{},photos:[]}));
     S.piecesFor=S.logType;
     S.curIdx=0;
