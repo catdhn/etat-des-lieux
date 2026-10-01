@@ -158,6 +158,22 @@ canvas.sig{width:100%;height:180px;border:2px solid var(--grey-l);border-radius:
 .mt8{margin-top:8px}.mt14{margin-top:14px}.mb0{margin-bottom:0}
 .hidden{display:none!important}
 
+/* ACCUEIL */
+.home-btn{display:flex;align-items:center;gap:14px;width:100%;padding:18px;border:none;border-radius:var(--r);font-family:var(--font);text-align:left;cursor:pointer;margin-bottom:12px;box-shadow:var(--sh)}
+.home-btn:active{opacity:.85;transform:scale(.98)}
+.home-btn .ico{font-size:30px}
+.home-btn .nm{font-size:16px;font-weight:700}
+.home-btn .ds{font-size:12px;opacity:.85;margin-top:2px}
+.home-btn.p{background:var(--tq);color:#fff}
+.home-title{font-size:12px;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:.06em;margin:22px 2px 10px}
+.draft{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:14px 16px;margin-bottom:10px;border-left:4px solid var(--orange)}
+.draft-t{font-size:15px;font-weight:700;margin-bottom:3px;word-break:break-word}
+.draft-s{font-size:12px;color:var(--grey);line-height:1.6}
+.draft-b{display:flex;gap:8px;margin-top:10px}
+.draft-b .btn-p{flex:1;padding:11px}
+.home-empty{background:#fff;border:1px dashed var(--tq-l);border-radius:var(--r);padding:18px;text-align:center;font-size:13px;color:var(--grey)}
+.home-note{font-size:11px;color:var(--grey);text-align:center;margin-top:16px;line-height:1.5}
+
 /* ÉTAT téléchargement */
 .dl-status{text-align:center;padding:16px;font-size:13px;color:var(--grey);display:none}
 .dl-status.show{display:block}
@@ -171,20 +187,32 @@ canvas.sig{width:100%;height:180px;border:2px solid var(--grey-l);border-radius:
     <div class="hdr-logo">Turquoise Propriétés</div>
     <div class="hdr-sub">État des lieux</div>
   </div>
-  <div class="hdr-step" id="stepInd">Étape 1 / 5</div>
+  <div class="hdr-step hidden" id="stepInd">Étape 1 / 5</div>
+</div>
+
+<!-- ══ ÉCRAN 0 — ACCUEIL ══ -->
+<div class="scr on" id="s0">
+  <button class="home-btn p" onclick="newDraft()">
+    <span class="ico">➕</span>
+    <span><div class="nm">Commencer un nouvel état des lieux</div><div class="ds">Entrée ou sortie d'un locataire</div></span>
+  </button>
+
+  <div class="home-title">Reprendre un état des lieux commencé</div>
+  <div id="draftList"></div>
+  <div class="home-note" id="homeNote">💾 Les états des lieux non terminés sont enregistrés automatiquement sur cet appareil.</div>
 </div>
 
 <!-- ══ ÉCRAN 1 — INFO ══ -->
-<div class="scr on" id="s1">
+<div class="scr" id="s1">
   <div class="prog-w"><div class="prog-b" style="width:20%"></div></div>
 
   <div class="card">
     <div class="card-t">Type d'état des lieux</div>
     <div class="sel2">
-      <div class="sel-opt" onclick="pick('edlType','entree',this)">
+      <div class="sel-opt" data-k="edlType" data-v="entree" onclick="pick('edlType','entree',this)">
         <div class="ico">🔑</div><div class="nm" style="color:var(--tq)">Entrée</div>
       </div>
-      <div class="sel-opt" onclick="pick('edlType','sortie',this)">
+      <div class="sel-opt" data-k="edlType" data-v="sortie" onclick="pick('edlType','sortie',this)">
         <div class="ico">📦</div><div class="nm" style="color:var(--grey)">Sortie</div>
       </div>
     </div>
@@ -193,10 +221,10 @@ canvas.sig{width:100%;height:180px;border:2px solid var(--grey-l);border-radius:
   <div class="card">
     <div class="card-t">Type de logement</div>
     <div class="sel2">
-      <div class="sel-opt" onclick="pick('logType','3.5',this)">
+      <div class="sel-opt" data-k="logType" data-v="3.5" onclick="pick('logType','3.5',this)">
         <div class="ico">🏠</div><div class="nm">3½</div><div class="ds">5 pièces</div>
       </div>
-      <div class="sel-opt" onclick="pick('logType','4.5',this)">
+      <div class="sel-opt" data-k="logType" data-v="4.5" onclick="pick('logType','4.5',this)">
         <div class="ico">🏡</div><div class="nm">4½</div><div class="ds">6 pièces</div>
       </div>
     </div>
@@ -214,7 +242,7 @@ canvas.sig{width:100%;height:180px;border:2px solid var(--grey-l);border-radius:
   </div>
 
   <div class="bnav">
-    <button class="btn btn-s" style="flex:1" onclick="resetApp()" id="btnS1Back">↺ Réinitialiser</button>
+    <button class="btn btn-s" style="flex:1" onclick="goHome()" id="btnS1Back">← Accueil</button>
     <button class="btn btn-p" style="flex:2" onclick="goS2()">Commencer l'inspection →</button>
   </div>
 </div>
@@ -371,7 +399,8 @@ canvas.sig{width:100%;height:180px;border:2px solid var(--grey-l);border-radius:
 
   <div style="padding:0 16px 16px">
     <button class="btn btn-s mt8" onclick="showS('s4')">← Retour aux signatures</button>
-    <button class="btn btn-s" style="margin-top:8px" onclick="resetApp()">+ Nouveau rapport</button>
+    <button class="btn btn-s" style="margin-top:8px" onclick="newDraft()">+ Nouveau rapport</button>
+    <button class="btn btn-s" style="margin-top:8px" onclick="goHome()">🏠 Accueil</button>
   </div>
 </div>
 
@@ -396,13 +425,18 @@ const PIECES_45 = [
 const DIVERS_ELEMS = ['Sonnette / Interphone','Détecteur de fumée','Boîte aux lettres','Stationnement'];
 const CLES_TYPES = ['Entrée commune','Entrée appartement','Boîte aux lettres'];
 
-let S = {
-  edlType:null, logType:null,
-  adresse:'', locataire:'', emailLocataire:'', nouvelleAdresse:'', dateInsp:'', inspecteur:'', ville:'Sherbrooke',
-  pieces:[], divers:{}, cles:{}, commentairesGen:'',
-  curIdx:0, sig1:null, sig2:null, nomLocSig:'', nomInspSig:'',
-  nomFichier:''
-};
+function freshState(){
+  return {
+    id:null, screen:'s1', updatedAt:0,
+    edlType:null, logType:null,
+    adresse:'', locataire:'', emailLocataire:'', nouvelleAdresse:'', dateInsp:'', inspecteur:'', ville:'Sherbrooke',
+    pieces:[], piecesFor:null, divers:{}, cles:{}, commentairesGen:'',
+    curIdx:0, sig1:null, sig2:null, nomLocSig:'', nomInspSig:'',
+    nomFichier:''
+  };
+}
+let S = freshState();
+let active = false; // vrai tant qu'un état des lieux est ouvert (donc sauvegardé automatiquement)
 let sigCtx={}, sigDrawing={};
 
 function showS(id) {
@@ -410,7 +444,10 @@ function showS(id) {
   document.getElementById(id).classList.add('on');
   window.scrollTo(0,0);
   const map={s1:'1 / 5',s2:'2 / 5',s2b:'3 / 5',s3:'4 / 5',s4:'4 / 5',s5:'5 / 5'};
-  document.getElementById('stepInd').textContent='Étape '+(map[id]||'');
+  const ind=document.getElementById('stepInd');
+  ind.classList.toggle('hidden',!map[id]);
+  if(map[id]) ind.textContent='Étape '+map[id];
+  if(active){S.screen=id;autoSave()}
 }
 
 function pick(key,val,el) {
@@ -418,76 +455,175 @@ function pick(key,val,el) {
   el.parentElement.querySelectorAll('.sel-opt').forEach(e=>e.classList.remove('on'));
   el.classList.add('on');
   if(key==='edlType') document.getElementById('s1-nouv').classList.toggle('hidden',val!=='sortie');
+  autoSave();
 }
 
-// ══ SAUVEGARDE AUTOMATIQUE ══
-const BACKUP_KEY = 'turquoise_edl_backup';
+// ══ BROUILLONS (sauvegarde dans l'appareil, IndexedDB) ══
+// IndexedDB plutôt que localStorage : les photos (base64) dépassent vite les ~5 Mo de localStorage.
+const DB_NAME='turquoise_edl', STORE='drafts', LEGACY_KEY='turquoise_edl_backup';
+let dbP=null, dbBroken=false, saveTimer=null, lastSave=Promise.resolve();
+
+function openDB(){
+  if(!dbP) dbP=new Promise((res,rej)=>{
+    if(!window.indexedDB){rej(new Error('IndexedDB indisponible'));return}
+    const rq=indexedDB.open(DB_NAME,1);
+    rq.onupgradeneeded=()=>rq.result.createObjectStore(STORE,{keyPath:'id'});
+    rq.onsuccess=()=>res(rq.result);
+    rq.onerror=()=>rej(rq.error);
+  });
+  return dbP;
+}
+function tx(mode,fn){
+  return openDB().then(db=>new Promise((res,rej)=>{
+    const t=db.transaction(STORE,mode), r=fn(t.objectStore(STORE));
+    t.oncomplete=()=>res(r&&r.result);
+    t.onerror=t.onabort=()=>rej(t.error);
+  }));
+}
+const dbPut=d=>tx('readwrite',st=>st.put(d));
+const dbDel=id=>tx('readwrite',st=>st.delete(id));
+const dbGet=id=>tx('readonly',st=>st.get(id));
+const dbAll=()=>tx('readonly',st=>st.getAll());
+
+function newId(){return (window.crypto&&crypto.randomUUID)?crypto.randomUUID():'d'+Date.now()+Math.random().toString(36).slice(2,8)}
+function esc(t){return String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+// Lit les champs texte de l'écran affiché (ils ne sont dans S qu'au passage à l'écran suivant)
+function syncFromDom(){
+  if(S.screen==='s1'){
+    const v=id=>document.getElementById(id).value;
+    S.adresse=v('adresse').trim(); S.locataire=v('locataire').trim(); S.emailLocataire=v('emailLocataire').trim();
+    S.nouvelleAdresse=v('nouvelleAdresse').trim(); S.dateInsp=v('dateInsp'); S.inspecteur=v('inspecteur').trim();
+    S.ville=v('ville').trim()||'Sherbrooke';
+  }else if(S.screen==='s2b'){
+    S.commentairesGen=document.getElementById('commentairesGen').value;
+  }
+}
+function hasContent(){
+  return !!(S.edlType||S.logType||S.adresse||S.locataire||S.emailLocataire||S.inspecteur||S.pieces.length);
+}
 
 function autoSave(){
-  try{
-    const backup = {
-      timestamp: new Date().toISOString(),
-      state: JSON.parse(JSON.stringify({
-        ...S,
-        // Exclure les photos pour garder le backup léger si trop lourd
-        pieces: S.pieces.map(p=>({...p, photos: p.photos.slice(0,10)}))
-      }))
-    };
-    localStorage.setItem(BACKUP_KEY, JSON.stringify(backup));
-  }catch(e){ console.warn('Sauvegarde impossible:', e); }
+  if(!active) return;
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(saveNow,400);
 }
-
-function checkBackup(){
-  try{
-    const raw = localStorage.getItem(BACKUP_KEY);
-    if(!raw) return;
-    const backup = JSON.parse(raw);
-    const age = (new Date() - new Date(backup.timestamp)) / (1000*60*60);
-    if(age > 24){ localStorage.removeItem(BACKUP_KEY); return; }
-    // Afficher bannière de restauration
-    const dateF = new Date(backup.timestamp).toLocaleDateString('fr-CA',{day:'2-digit',month:'long',hour:'2-digit',minute:'2-digit'});
-    const banner = document.createElement('div');
-    banner.id = 'restore-banner';
-    banner.style.cssText = 'position:fixed;top:56px;left:0;right:0;background:#FFF8E8;border-bottom:2px solid #E8913A;padding:12px 18px;z-index:300;display:flex;align-items:center;justify-content:space-between;font-family:var(--font);font-size:13px';
-    banner.innerHTML = `
-      <span>⚠️ <strong>Rapport non terminé</strong> — ${backup.state.locataire||'?'} · ${backup.state.adresse||'?'} · ${dateF}</span>
-      <div style="display:flex;gap:8px">
-        <button onclick="restoreBackup()" style="background:#E8913A;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-weight:700;cursor:pointer;font-family:var(--font)">↩ Reprendre</button>
-        <button onclick="dismissBackup()" style="background:#fff;color:#555;border:1px solid #ccc;border-radius:6px;padding:7px 14px;cursor:pointer;font-family:var(--font)">Ignorer</button>
-      </div>
-    `;
-    document.body.appendChild(banner);
-  }catch(e){}
+function saveNow(){
+  clearTimeout(saveTimer); saveTimer=null;
+  if(!active) return lastSave;
+  syncFromDom();
+  if(!hasContent()) return lastSave;
+  if(!S.id) S.id=newId();
+  S.updatedAt=Date.now();
+  lastSave=dbPut({id:S.id,updatedAt:S.updatedAt,state:S}).then(()=>{dbBroken=false},e=>{dbBroken=true;console.warn('Sauvegarde impossible:',e)});
+  return lastSave;
 }
+document.addEventListener('input',autoSave);
+document.addEventListener('change',autoSave);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveNow()});
+window.addEventListener('pagehide',saveNow);
 
-function restoreBackup(){
+// Ancienne sauvegarde unique (localStorage) → convertie en brouillon, une seule fois
+async function migrateLegacy(){
   try{
-    const raw = localStorage.getItem(BACKUP_KEY);
+    const raw=localStorage.getItem(LEGACY_KEY);
     if(!raw) return;
-    const backup = JSON.parse(raw);
-    Object.assign(S, backup.state);
-    document.getElementById('restore-banner')?.remove();
-    // Restaurer les champs de l'écran 1
-    document.getElementById('adresse').value = S.adresse||'';
-    document.getElementById('locataire').value = S.locataire||'';
-    document.getElementById('emailLocataire').value = S.emailLocataire||'';
-    document.getElementById('inspecteur').value = S.inspecteur||'';
-    document.getElementById('ville').value = S.ville||'Sherbrooke';
-    document.getElementById('dateInsp').value = S.dateInsp||'';
-    if(S.nouvelleAdresse) document.getElementById('nouvelleAdresse').value = S.nouvelleAdresse;
-    // Naviguer vers le bon écran
-    if(S.pieces && S.pieces.length > 0){
-      buildPNav();
-      loadPiece(S.curIdx||0);
-      showS('s2');
+    const old=JSON.parse(raw);
+    if(old&&old.state&&(old.state.adresse||old.state.locataire||(old.state.pieces||[]).length)){
+      const st=Object.assign(freshState(),old.state,{id:newId(),screen:old.state.pieces&&old.state.pieces.length?'s2':'s1'});
+      st.updatedAt=old.timestamp?new Date(old.timestamp).getTime():Date.now();
+      await dbPut({id:st.id,updatedAt:st.updatedAt,state:st});
     }
-    alert('✅ Rapport restauré ! Vous pouvez continuer où vous en étiez.');
-  }catch(e){ alert('Impossible de restaurer le rapport.'); }
+    localStorage.removeItem(LEGACY_KEY);
+  }catch(e){console.warn('Migration impossible:',e)}
 }
 
-function dismissBackup(){
-  localStorage.removeItem(BACKUP_KEY);
-  document.getElementById('restore-banner')?.remove();
+function progressLabel(st){
+  if(!st.pieces||!st.pieces.length) return 'Informations à compléter';
+  const done=st.pieces.filter(isDone).length;
+  return done+' / '+st.pieces.length+' pièces évaluées';
+}
+
+async function renderHome(){
+  active=false;
+  showS('s0');
+  const box=document.getElementById('draftList');
+  const note=document.getElementById('homeNote');
+  let drafts=[];
+  try{drafts=await dbAll(); dbBroken=false}catch(e){dbBroken=true}
+  if(dbBroken){
+    box.innerHTML='';
+    note.innerHTML='⚠️ La sauvegarde sur cet appareil est indisponible (navigation privée ?). Terminez le rapport sans quitter la page.';
+    return;
+  }
+  note.innerHTML='💾 Les états des lieux non terminés sont enregistrés automatiquement sur cet appareil.';
+  drafts.sort((a,b)=>b.updatedAt-a.updatedAt);
+  if(!drafts.length){
+    box.innerHTML='<div class="home-empty">Aucun état des lieux en cours.</div>';
+    return;
+  }
+  box.innerHTML=drafts.map(d=>{
+    const st=d.state;
+    const type=st.edlType==='entree'?'Entrée':st.edlType==='sortie'?'Sortie':'Type à choisir';
+    const when=new Date(d.updatedAt).toLocaleDateString('fr-CA',{day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'});
+    return `<div class="draft">
+      <div class="draft-t">${esc(st.adresse)||'Adresse non indiquée'}</div>
+      <div class="draft-s">${esc(st.locataire)||'Locataire non indiqué'} · ${type}<br>${progressLabel(st)}<br>Modifié le ${when}</div>
+      <div class="draft-b">
+        <button class="btn btn-p btn-sm" onclick="openDraft('${esc(d.id)}')">↩ Reprendre</button>
+        <button class="btn btn-d btn-sm" onclick="deleteDraft('${esc(d.id)}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function goHome(){
+  await saveNow();
+  renderHome();
+}
+
+async function deleteDraft(id){
+  if(!confirm('Supprimer ce brouillon ? Les données et les photos seront perdues.')) return;
+  try{await dbDel(id)}catch(e){alert('Suppression impossible.')}
+  renderHome();
+}
+
+function fillS1(){
+  const set=(id,v)=>document.getElementById(id).value=v||'';
+  set('adresse',S.adresse); set('locataire',S.locataire); set('emailLocataire',S.emailLocataire);
+  set('nouvelleAdresse',S.nouvelleAdresse); set('inspecteur',S.inspecteur);
+  set('ville',S.ville||'Sherbrooke');
+  if(S.dateInsp) set('dateInsp',S.dateInsp); else document.getElementById('dateInsp').valueAsDate=new Date();
+  document.querySelectorAll('#s1 .sel-opt').forEach(e=>e.classList.toggle('on',S[e.dataset.k]===e.dataset.v));
+  document.getElementById('s1-nouv').classList.toggle('hidden',S.edlType!=='sortie');
+}
+
+function newDraft(){
+  S=freshState();
+  fillS1();
+  active=true;
+  showS('s1');
+}
+
+async function openDraft(id){
+  let d=null;
+  try{d=await dbGet(id)}catch(e){}
+  if(!d){alert('Brouillon introuvable.');renderHome();return}
+  S=Object.assign(freshState(),d.state);
+  S.id=id;
+  fillS1();
+  active=true;
+  let scr=S.screen||'s1';
+  if(scr==='s4'||scr==='s5') scr='s3'; // les signatures ne sont refaites qu'à la fin
+  if(!S.pieces.length) scr='s1';
+  if(S.pieces.length){
+    S.curIdx=Math.min(S.curIdx||0,S.pieces.length-1);
+    buildPNav();
+  }
+  if(scr==='s2'){loadPiece(S.curIdx);showS('s2')}
+  else if(scr==='s2b'){buildDiversUI();showS('s2b')}
+  else if(scr==='s3'){buildResume();showS('s3')}
+  else showS('s1');
 }
 
 function goS2() {
@@ -505,12 +641,16 @@ function goS2() {
   S.ville=document.getElementById('ville').value.trim()||'Sherbrooke';
   S.nouvelleAdresse=document.getElementById('nouvelleAdresse').value.trim();
   S.emailLocataire=document.getElementById('emailLocataire').value.trim();
-  const tmpl=S.logType==='3.5'?PIECES_35:PIECES_45;
-  S.pieces=tmpl.map(p=>({...p,evals:{},photos:[]}));
-  DIVERS_ELEMS.forEach(e=>{S.divers[e]={etat:null,obs:''}});
-  CLES_TYPES.forEach(t=>{S.cles[t]={qt:'',date:'',obs:''}});
-  S.curIdx=0;
-  buildPNav(); loadPiece(0); showS('s2');
+  // Les pièces ne sont (re)créées que si elles n'existent pas encore ou si le type de logement a changé
+  if(!S.pieces.length||S.piecesFor!==S.logType){
+    const tmpl=S.logType==='3.5'?PIECES_35:PIECES_45;
+    S.pieces=tmpl.map(p=>({...p,evals:{},photos:[]}));
+    S.piecesFor=S.logType;
+    S.curIdx=0;
+  }
+  DIVERS_ELEMS.forEach(e=>{if(!S.divers[e])S.divers[e]={etat:null,obs:''}});
+  CLES_TYPES.forEach(t=>{if(!S.cles[t])S.cles[t]={qt:'',date:'',obs:''}});
+  buildPNav(); loadPiece(S.curIdx); showS('s2');
 }
 
 function buildPNav() {
@@ -590,7 +730,7 @@ function addPhotos(ev) {
   ev.target.value='';
 }
 
-function delPhoto(pidx,i){S.pieces[pidx].photos.splice(i,1);renderPhotos(pidx)}
+function delPhoto(pidx,i){S.pieces[pidx].photos.splice(i,1);renderPhotos(pidx);autoSave()}
 
 function nextP() {
   const isLast=S.curIdx===S.pieces.length-1;
@@ -768,8 +908,9 @@ function dlData(){
   const btn=document.getElementById('btnDl');
   const status=document.getElementById('dlStatus');
 
-  // Effacer le backup — rapport complété avec succès
-  try{ localStorage.removeItem(BACKUP_KEY); }catch(e){}
+  // Rapport complété avec succès : le brouillon n'est plus nécessaire
+  active=false; clearTimeout(saveTimer);
+  if(S.id){const id=S.id; lastSave.then(()=>dbDel(id)).catch(()=>{})}
 
   // Télécharger le fichier
   const jsonString=JSON.stringify(obj,null,2);
@@ -801,23 +942,9 @@ function dlData(){
 
 function copyLink(url){}
 
-function resetApp(){
-  if(!confirm('Démarrer un nouveau rapport ? Les données actuelles seront perdues.'))return;
-  S={edlType:null,logType:null,adresse:'',locataire:'',emailLocataire:'',nouvelleAdresse:'',dateInsp:'',inspecteur:'',ville:'Sherbrooke',pieces:[],divers:{},cles:{},commentairesGen:'',curIdx:0,sig1:null,sig2:null,nomLocSig:'',nomInspSig:'',nomFichier:''};
-  ['adresse','locataire','emailLocataire','nouvelleAdresse','inspecteur'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('ville').value='Sherbrooke';
-  document.getElementById('dateInsp').valueAsDate=new Date();
-  document.getElementById('dlStatus').classList.remove('show');
-  document.getElementById('btnDl').textContent='📤 Envoyer le rapport à Catriona';
-  document.getElementById('btnDl').disabled=false;
-  document.getElementById('btnDl').style.opacity='1';
-  document.querySelectorAll('.sel-opt').forEach(e=>e.classList.remove('on'));
-  document.getElementById('s1-nouv').classList.add('hidden');
-  showS('s1');
-}
-
 document.getElementById('dateInsp').valueAsDate=new Date();
-checkBackup();
+migrateLegacy().then(renderHome);
+if(navigator.storage&&navigator.storage.persist) navigator.storage.persist().catch(()=>{});
 </script>
 </body>
 </html>
